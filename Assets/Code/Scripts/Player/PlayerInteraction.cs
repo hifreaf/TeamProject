@@ -20,6 +20,5 @@ public class PlayerInteraction : MonoBehaviour
     void OnInteract(InputValue value)
     {
         dialogMng.Action(this.gameObject);
-        Debug.Log("Clicked E");
     }
 }
