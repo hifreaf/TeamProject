@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,6 +18,20 @@ public class GrapplingHook : MonoBehaviour
 
     public Vector3 enemyFollowOffset = Vector3.zero;
     private List<Transform> enemies = new List<Transform>();
+    Rigidbody2D rb;
+    SpriteRenderer sprite;
+    Coroutine gravityCoroutine;
+    float originalGravity;
+    float originalSpeed;
+
+    [SerializeField] Transform groundCheck;
+    [SerializeField] LayerMask groundLayer;
+    [SerializeField] float groundRadius = 0.15f;
+
+    bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
+    }
 
     void Start()
     {
@@ -29,6 +44,9 @@ public class GrapplingHook : MonoBehaviour
         line.useWorldSpace = true;
         isAttach = false;
         hook.gameObject.SetActive(false);
+
+        rb = GetComponent<Rigidbody2D>();
+        sprite = GetComponent<SpriteRenderer>();
     }
     void Update()
     {
@@ -86,6 +104,10 @@ public class GrapplingHook : MonoBehaviour
                 isLineMax = false;
                 hook.GetComponent<Hooking>().joint2D.enabled = false;
                 hook.gameObject.SetActive(false);
+                if (gravityCoroutine != null)
+                    StopCoroutine(gravityCoroutine);
+
+                gravityCoroutine = StartCoroutine(TempChangeGravity(0.2f, 0f, 1f));
             } 
         }
 
@@ -100,6 +122,15 @@ public class GrapplingHook : MonoBehaviour
                 ThrowEnemy(enemies[0], dir, GameManager.Instance.playerStatsRuntime.hookEnemyThrowForce);
             }
 
+        }
+        if (IsGrounded() && gravityCoroutine != null)
+        {
+            StopCoroutine(gravityCoroutine);
+            gravityCoroutine = null;
+
+            rb.gravityScale = originalGravity;
+            GameManager.Instance.playerStatsRuntime.speed = originalSpeed;
+            sprite.color = Color.white;
         }
     }
 
@@ -205,5 +236,21 @@ public class GrapplingHook : MonoBehaviour
         // 오브젝트가 아직 살아있을 때만 복구
         if (enemyCol != null && playerCol != null)
             Physics2D.IgnoreCollision(enemyCol, playerCol, false);
+    }
+    IEnumerator TempChangeGravity(float tempGravity, float tempSpeed, float duration)
+    {
+
+        sprite.color = Color.red;
+        originalSpeed = GameManager.Instance.playerStatsRuntime.speed;
+        originalGravity = rb.gravityScale;
+        rb.gravityScale = tempGravity;
+        GameManager.Instance.playerStatsRuntime.speed = tempSpeed;
+
+        yield return new WaitForSeconds(duration);
+
+        rb.gravityScale = originalGravity;
+        GameManager.Instance.playerStatsRuntime.speed = originalSpeed;
+        gravityCoroutine = null;
+        sprite.color = Color.white;
     }
 }
