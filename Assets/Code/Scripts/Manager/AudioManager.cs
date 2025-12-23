@@ -1,21 +1,55 @@
 ﻿using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
-    [Header("배경음악")]
-    public AudioSource bgmSource;
+    [Header("AudioMixer")]
+    public AudioMixer audioMixer;
 
-    [Header("효과음")]
+    [Header("AudioSource")]
+    public AudioSource bgmSource;
     public AudioSource sfxSource;
 
-    [Header("플레이어 효과음")]
+    [Header("Player SFX")]
     public AudioClip playerJump;
 
-    [Header("갈고리 효과음")]
+    [Header("Hook SFX")]
     public AudioClip hookAttach;
     public AudioClip hookDraft;
     public AudioClip hookShoot;
     public AudioClip hookThrowEnemy;
+
+    const string BGM_KEY = "BGM_VOLUME";
+    const string SFX_KEY = "SFX_VOLUME";
+
+    void Awake()
+    {
+        LoadVolume();
+    }
+
+    /* ---------- Volume ---------- */
+
+    public void SetBGMVolume(float value)
+    {
+        audioMixer.SetFloat("BGMVolume", Mathf.Log10(value) * 20f);
+        PlayerPrefs.SetFloat(BGM_KEY, value);
+    }
+
+    public void SetSFXVolume(float value)
+    {
+        audioMixer.SetFloat("SFXVolume", Mathf.Log10(value) * 20f);
+        PlayerPrefs.SetFloat(SFX_KEY, value);
+    }
+
+    void LoadVolume()
+    {
+        float bgm = PlayerPrefs.GetFloat(BGM_KEY, 1f);
+        float sfx = PlayerPrefs.GetFloat(SFX_KEY, 1f);
+
+        SetBGMVolume(bgm);
+        SetSFXVolume(sfx);
+    }
+
 
     // 배경음 재생
     public void PlayBGM(AudioClip clip, bool loop = true)
