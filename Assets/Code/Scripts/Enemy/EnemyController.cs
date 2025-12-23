@@ -87,7 +87,7 @@ public class EnemyController : MonoBehaviour, IDamageable
 		}
 
 		// 몬스터의 태그가 ThrowingEnemy일 때 몬스터에게 닿았을 경우
-		if (transform.gameObject.tag == throwingEnemyStr)
+		if (transform.gameObject.tag == throwingEnemyStr && other.gameObject.CompareTag("Enemy"))
 		{
 			// 던져지는 몬스터 데미지 입히기
 			damageable.TakeDamage(1);

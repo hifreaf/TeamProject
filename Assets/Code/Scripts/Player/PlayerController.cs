@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.LowLevelPhysics2D.PhysicsShape;
 
 public class PlayerController : MonoBehaviour, IDamageable
 {
@@ -10,7 +11,8 @@ public class PlayerController : MonoBehaviour, IDamageable
     SpriteRenderer sprite;
     GrapplingHook grappling;
 
-    PlayerInteraction interaction;  // »óÈ£ÀÛ¿ë
+	PlayerInteraction interaction;  // ìƒí˜¸ì‘ìš©
+
 
     void Awake()
     {
@@ -29,18 +31,18 @@ public class PlayerController : MonoBehaviour, IDamageable
 
         float speed = GameManager.Instance.playerStatsRuntime.speed;
 
-        if (grappling.isAttach) // ÈÅ ¸Å´Ş¸²
+        if (grappling.isAttach) // í›… ë§¤ë‹¬ë¦¼
         {
             float hookSwingForce = GameManager.Instance.playerStatsRuntime.hookSwingForce;
             rigid.AddForce(new Vector2(inputVec.x * hookSwingForce, 0f));
         }
-        else // ÀÏ¹İ ÀÌµ¿
+        else // ì¼ë°˜ ì´ë™
         {
             float x = inputVec.x * speed * Time.deltaTime; // translate
             transform.Translate(x, 0, 0);
         }
 
-        // ¹æÇâ ÇÃ¸³
+        // ë°©í–¥ í”Œë¦½
         if (inputVec.x > 0)
             sprite.flipX = false;
         else if (inputVec.x < 0)
@@ -49,8 +51,13 @@ public class PlayerController : MonoBehaviour, IDamageable
 
 
     void OnJump()
-    {
-        if (!isGrounded) return;
+	{
+		// ê·¸ë˜í”Œë§ ì‚¬ìš© ì¤‘ ì í”„ ì¤‘ì¼ ë•Œ
+		if (grappling.isAttach) return;
+
+		// í”Œë ˆì´ì–´ê°€ ë°”ë‹¥ì´ ì•„ë‹ ê²½ìš°
+		if (!isGrounded) return;
+
         GameManager.Instance.audioManager.PlayJumpSound(1f);
         rigid.AddForce(Vector2.up * GameManager.Instance.playerStatsRuntime.jumpForce, ForceMode2D.Impulse);
 
@@ -58,27 +65,38 @@ public class PlayerController : MonoBehaviour, IDamageable
     }
 
     void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.contacts[0].normal.y > 0.7f)
-        {
-            isGrounded = true;
-            rigid.linearVelocity = new Vector2(0f, rigid.linearVelocityY);
-        }
-    }
+	{
+		// ë°”ë‹¥ ì²´í¬
+		foreach (var contact in collision.contacts)
+		{
+			if (contact.normal.y > 0.5f &&
+				contact.point.y < transform.position.y)
+			{
+				isGrounded = true;
+				break;
+			}
+		}
+
+		if (isGrounded && rigid.linearVelocityY < 0f)
+		{
+			rigid.linearVelocity = new Vector2(rigid.linearVelocity.x, 0f);
+		}
+
+	}
 
 
-    void OnMove(InputValue value)
+	void OnMove(InputValue value)
     {
         inputVec = value.Get<Vector2>();
     }
 
-    // ÇÃ·¹ÀÌ¾î µ¥¹ÌÁö
+    // í”Œë ˆì´ì–´ ë°ë¯¸ì§€
     void IDamageable.TakeDamage(int attack)
     {
-        // ÇÃ·¹ÀÌ¾î Ã¼·Â ÁÙ¾îµé±â
+        // í”Œë ˆì´ì–´ ì²´ë ¥ ì¤„ì–´ë“¤ê¸°
         GameManager.Instance.playerStatsRuntime.currentHP -= attack;
 
-        Debug.Log("[ÇÃ·¹ÀÌ¾î µ¥¹ÌÁö] ÇÃ·¹ÀÌ¾î ÇöÀç Ã¼·Â: " + GameManager.Instance.playerStatsRuntime.currentHP);
+        Debug.Log("[í”Œë ˆì´ì–´ ë°ë¯¸ì§€] í”Œë ˆì´ì–´ í˜„ì¬ ì²´ë ¥: " + GameManager.Instance.playerStatsRuntime.currentHP);
     }
 
 }

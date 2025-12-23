@@ -296,7 +296,7 @@ public class GrapplingHook : MonoBehaviour
 
 		while (elapsed < slowLength)
 		{
-			// 땅에 닿거나 그래플링 훅을 다시 사용하면 즉시 종료
+			// 플레이어가 땅에 닿거나 그래플링 훅을 다시 사용하면 즉시 종료
 			if (player.isGrounded || isAttach)
 			{
 				break;
