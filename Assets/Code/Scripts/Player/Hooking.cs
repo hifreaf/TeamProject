@@ -45,7 +45,7 @@ public class Hooking : MonoBehaviour
 
             grappling.ApplyHookImpulse(transform.position); // Èû ÁÖ±â
 
-            grappling.isAttach = true;
+			grappling.isAttach = true;
             grappling.isHookActive = false;
             grappling.isLineMax = false;
         }
