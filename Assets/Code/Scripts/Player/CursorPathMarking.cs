@@ -52,14 +52,18 @@ public class CursorPathMarking : MonoBehaviour
 		if (hit)
 		{
 			// 부딪힌 요소가 NPC일 경우 선 비활성화
-			if(hit.collider.tag == "NPC")
+			if(hit.collider.CompareTag("NPC"))
 			{
 				visualizerLine.Stop();
 				return;
 			}
 
 			// 부딪힌 요소에 따라 선 색상 변경
-			if (hit.collider.tag == "Object")
+			if (hook.isEnemyAttach && (hit.collider.CompareTag("Enemy") || hit.collider.CompareTag("Object")))	// 뭔가를 들고 있을 때 오브젝트나 몬스터가 부딪혔을 경우
+			{
+				visualizerLine.SetLineColor(new Color(1f, 0.2f, 0.2f));
+			}
+			else if (hit.collider.CompareTag("Object"))
 			{
 				visualizerLine.SetLineColor(new Color(0.49f, 0.85f, 0.45f));
 			}
